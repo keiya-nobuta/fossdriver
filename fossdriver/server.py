@@ -41,14 +41,17 @@ class FossServer(object):
         for i in range(0,5):
             try:
                 r = self.session.get(url)
-                return r
+                if r.ok:
+                    return r
             except requests.exceptions.ConnectionError as e:
                 # try again after a brief pause
-                time.sleep(1)
                 exc = e
                 logging.debug("attempt " + str(i+1) + " failed")
+
+            time.sleep(1)
+
         # if we get here, we failed to connect
-        raise exc
+        raise TimeoutError if exc is None else exc
 
     def _post(self, endpoint, values):
         """Helper function: Make a POST call to the Fossology server."""
