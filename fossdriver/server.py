@@ -33,12 +33,12 @@ class FossServer(object):
         self.session = requests.Session()
         self.serverVersion = ""
 
-    def _get(self, endpoint):
+    def _get(self, endpoint, retry_count=5, retry_interval=1):
         """Helper function: Make a GET call to the Fossology server."""
         url = self.config.serverUrl + endpoint
         logging.debug("GET: " + url)
         exc = None
-        for i in range(0,5):
+        for i in range(0,retry_count):
             try:
                 r = self.session.get(url)
                 if r.ok:
@@ -48,7 +48,7 @@ class FossServer(object):
                 exc = e
                 logging.debug("attempt " + str(i+1) + " failed")
 
-            time.sleep(1)
+            time.sleep(retry_interval)
 
         # if we get here, we failed to connect
         raise TimeoutError if exc is None else exc
